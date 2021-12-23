@@ -1,19 +1,56 @@
 from typing import Dict
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, ViewportSize
 import time
 from moviepy.editor import *
 
 
-def shootGif(html: str,  output: str, duration: float, fps: float = 40, size: Dict[str, int] = None, tmp_dir: str = '__WEBSHOT_GIF_TMP__'):
+def shootGif(html: str,  output: str, duration: float, fps: float = 40, size: ViewportSize = None, tmp_dir: str = '__WEBSHOT_GIF_TMP__'):
+    """
+    record html content as gif
+
+    Parameters    
+    ----------
+    html: html content string
+    output: output path
+    duration: duration to record
+    fps: gif fps
+    size: ViewportSize:{ width: int,height: int }
+    tmp_dir: temporary output dir
+    """
+
     tmp_mv = os.path.normpath(os.path.join(
         output, '..', '__WEBSHOT_GIF_TMP__.webm'))
     shootWebm(html, tmp_mv, duration, size, tmp_dir)
-    clip = VideoFileClip(tmp_mv)
-    clip.write_gif(output, fps=fps)
+    shootGif(tmp_mv, output, fps)
     os.remove(tmp_mv)
 
 
-def shootWebm(html: str,  output: str, duration: float, size: Dict[str, int] = None, tmp_dir: str = '__WEBSHOT_WEBM_TMP__'):
+def shootGif(video: str, output: str, fps: float = 40):
+    """
+    convert video to gif
+
+    Parameters    
+    ----------
+    video: video path
+    output: output gif path
+    fps: gif fps
+    """
+    clip = VideoFileClip(video)
+    clip.write_gif(output, fps=fps)
+
+
+def shootWebm(html: str,  output: str, duration: float, size: ViewportSize = None, tmp_dir: str = '__WEBSHOT_WEBM_TMP__'):
+    """
+    record html content as webm
+
+    Parameters    
+    ----------
+    html: html content string
+    output: output path
+    duration: duration to record
+    size: ViewportSize:{ width: int,height: int }
+    tmp_dir: temporary output dir
+    """
     with sync_playwright() as p:
         browser = p.webkit.launch(slow_mo=0)
         page = browser.new_page(
